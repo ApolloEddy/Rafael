@@ -1,0 +1,14 @@
+{
+	"update": "date",
+	"NovelInfo": [
+		{
+			"index": 1,
+			"bookname": "string",
+			"hottext": "string",
+			"author": "string",
+			"summary": "string",
+			"library": "string",
+			"status": "string"
+		}
+	]
+}
