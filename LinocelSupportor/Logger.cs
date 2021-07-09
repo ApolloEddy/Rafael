@@ -18,7 +18,7 @@ namespace Rafael
 			{ throw new ArgumentException("错误的文件格式"); }
 			if (!File.Exists(path)) // 自动创建文件
 			{ file = File.Create(path); }
-			else 
+			else
 			{ file = new FileStream(path, FileMode.Open, FileAccess.ReadWrite); }
 			ContactPath = path;
 		}
@@ -41,11 +41,11 @@ namespace Rafael
 				$"{logTime},{type}\t[{logClass}] {content.Replace("\n", "\\n").Replace("\r", "\\r")}";
 			writeStringLineToFile(ref message);
 		}
-		public void Clear() 
+		public void Clear()
 		{ file.Seek(0, SeekOrigin.Begin); file.SetLength(0); }
 		public void Dispose()
 		{ file.Flush(false); file.Close(); file.Dispose(); }
-	
+
 		public void writeStringToFile(ref string message)
 		{
 			byte[] bytes = Encoding.UTF8.GetBytes(message);
