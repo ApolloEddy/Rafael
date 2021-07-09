@@ -32,10 +32,9 @@ namespace TestUnit
 
 			// :Debug at 哔哩轻小说
 			//LinovelibSupportor.collectBookInfos($"{Environment.CurrentDirectory}\\linovelib.json");
-			string page = LinovelibSupportor.page("https://www.linovelib.com/novel/2894/catalog");
+			string page = LinovelibSupportor.page("https://www.linovelib.com/novel/1163/catalog");
 			Catalog catalog = LinovelibSupportor.extractCatalog(ref page);
-			LinovelibSupportor.downloadText(catalog, Environment.CurrentDirectory + "/魔法禁书目录SS 生物黑客篇.txt");
-			// LinovelibSupportor.download("https://www.linovelib.com/novel/2668/123228.html", Environment.CurrentDirectory + "/1.txt", "侦探已死");
+			LinovelibSupportor.downloadText(catalog, Environment.CurrentDirectory + "/夏目友人帐.txt");
 
 			// 监控运行时长
 			double timediff = stopwatch.ElapsedMilliseconds / 1000;

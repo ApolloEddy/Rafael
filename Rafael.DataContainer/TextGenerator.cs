@@ -25,7 +25,7 @@ namespace Rafael.DataContainer
 		public void AppendLine() 
 		{ string content = "\r\n"; WriteString(ref content); }
 		public void AppendTitle(string title)
-		{ AppendLine();AppendLine(ref title); }
+		{ AppendLine(ref title); AppendLine(); }
 		public void AppendArticle(string title, ref string content)
 		{
 			AppendTitle(title);
