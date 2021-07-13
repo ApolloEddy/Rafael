@@ -226,7 +226,7 @@ namespace Rafael.LinovelibSupportor
                 info.index = long.Parse(tpBlock.extractOne("<a href=\"/novel/", ".html\""));
                 info.source = "哔哩轻小说";
                 result.Add(info);
-                info.outputToConsole("https://www.linovelib.com/novel/{index}/catalog"); // :Debug
+                // info.outputToConsole("https://www.linovelib.com/novel/{index}/catalog"); // :Debug
 			}
 
             return result.ToArray();
