@@ -77,6 +77,28 @@ namespace Rafael.DataContainer
 		public string tag { get; set; }
 		public string status { get; set; }
 
+		public void outputToConsole(string api)
+		{
+			Console.ResetColor();
+			Console.ForegroundColor = ConsoleColor.Cyan;  Console.Write("[书名] ");
+			Console.ResetColor(); Console.Write(bookname); Console.WriteLine();													// 书名
+			Console.ForegroundColor = ConsoleColor.Green; Console.Write("[著者] ");
+			Console.ResetColor(); Console.WriteLine(author);																	// 作者
+			Console.ForegroundColor = ConsoleColor.Green; Console.Write("[来源] ");
+			Console.ResetColor(); Console.WriteLine(source);																	// 来源
+			Console.ForegroundColor = ConsoleColor.Green; Console.Write("[标签] ");
+			Console.ResetColor(); Console.Write(tag); Console.Write("\t");														// 标签
+			Console.ForegroundColor = ConsoleColor.Green; Console.Write("[状态] ");
+			Console.ResetColor(); Console.WriteLine(status);																	// 连载状态
+			Console.ForegroundColor = ConsoleColor.Green; Console.Write("[热词] ");
+			Console.ResetColor(); Console.WriteLine(hottext);																	// 热词
+			Console.ForegroundColor = ConsoleColor.Green; Console.Write("[链接] ");
+			Console.ResetColor(); Console.Write("<目录>" + api.Replace("{index}", index.ToString())); Console.WriteLine();		// 链接
+			Console.ForegroundColor = ConsoleColor.Green; Console.Write("[简介] ");
+			Console.ResetColor(); Console.WriteLine(
+				summary.Replace("\n", "").Replace("\t", ""));																	// 简介
+			Console.WriteLine();
+		}
 		public string toJsonString()
 		{ return JsonConvert.SerializeObject(this); }
 	}

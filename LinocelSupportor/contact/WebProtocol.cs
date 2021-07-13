@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Text;
 
 namespace Aries
 {
@@ -237,6 +238,15 @@ namespace Aries
 		public static string UnescapeDataString(string input)
 		{
 			return Uri.UnescapeDataString(input);
+		}
+		public void post(string content)
+		{
+			byte[] bytes = Encoding.UTF8.GetBytes(content);
+			request.Method = "POST";
+			request.ContentLength = bytes.Length;
+			var requestStream = request.GetRequestStream();
+			requestStream.Write(bytes, 0, bytes.Length);
+			requestStream.Close();
 		}
 
 		/// <summary>

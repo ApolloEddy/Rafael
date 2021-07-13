@@ -37,10 +37,14 @@ namespace TestUnit
 			// 数据收集
 			// LinovelibSupportor.collectBookInfos($"{Environment.CurrentDirectory}\\linovelib.json");
 			// 使用测试
-			string page = LinovelibSupportor.page("https://www.linovelib.com/novel/2668/catalog"); // 
-			Catalog catalog = LinovelibSupportor.extractCatalog(ref page);
-			LinovelibSupportor.downloadDocx(catalog, Environment.CurrentDirectory + "/侦探已死.docx");
+			//string page = LinovelibSupportor.page("https://www.linovelib.com/novel/2668/catalog"); // 
+			//Catalog catalog = LinovelibSupportor.extractCatalog(ref page);
+			//LinovelibSupportor.downloadDocx(catalog, Environment.CurrentDirectory + "/侦探已死.docx");
+			
+			var result = LinovelibSupportor.search("魔法禁书目录");
+			LinovelibSupportor.extractSearchResult(ref result);
 
+			// :Debug at DocGenerator
 			//var d = new DocxGenerator(Environment.CurrentDirectory + "/test.docx");
 			//d.Test();
 			//d.Save();

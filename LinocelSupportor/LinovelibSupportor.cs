@@ -109,11 +109,18 @@ namespace Rafael.LinovelibSupportor
             errorLogger.Dispose();
             logger.Dispose();
         }
-        public static LiteNovelInfo[] search(string searchkey)
+        public static string search(string searchkey)
 		{
-            const string API = "https://www.linovelib.com/s1/?searchkey=";
+            const string API = "https://w.linovelib.com/s1/?searchkey={searchkey}&searchtype={searchtype}"; // 电脑端需要注册，手机端不需要
+            const string searchType = "All";
+            string url = API.Replace("{searchkey}", WebProtocol.EscapeDataString(searchkey)).Replace("{searchtype}", searchType);
+            // string postContent = $"searchkey={WebProtocol.EscapeDataString(searchkey)}&searchtype={searchType}";
+            var web = createWebProtocol(url);
+            web.computerUAsign = false; // 模拟手机端欺骗获取搜索页面
+            // web.post(postContent);
+            // Console.WriteLine(web.contentDocument); // :Debug
 
-            return null;
+            return web.contentDocument;
         }
         public static Catalog extractCatalog(ref string page)
 		{
@@ -145,6 +152,12 @@ namespace Rafael.LinovelibSupportor
 			}
             return result;
 		}
+        public static Catalog extractCatalog(LiteNovelInfo novelInfo)
+		{
+            const string API = "https://www.linovelib.com/novel/{index}/catalog";
+            var content = page(API.Replace("{index}", novelInfo.index.ToString()));
+            return extractCatalog(ref content);
+        }
         public static string extractArticle(string url)
 		{
             const string host = "https://www.linovelib.com/";
@@ -193,6 +206,30 @@ namespace Rafael.LinovelibSupportor
                 url = host + TextParser.extractOne(tempBlock, "书签</a><a href=\"", "\"");
 			}
             return content.ToString();
+		}
+        public static LiteNovelInfo[] extractSearchResult(ref string page)
+		{
+            List<LiteNovelInfo> result = new List<LiteNovelInfo>();
+            var tp = new TextParser(page);
+            tp.extrim("\r", "\n", "\f");
+            tp.extractOne("<div class=\"module-header\">", "<footer class=\"footer\">", true);
+            foreach (string block in TextParser.extract(tp.ToString(), "<li class=\"book-li\">", "</a></li>"))
+			{
+                var tpBlock = new TextParser(block);
+                LiteNovelInfo info = new LiteNovelInfo();
+                info.bookname = tpBlock.extractOne("class=\"book-cover\" alt=\"", "\"");
+                info.author = tp.extractOne("<title>作者</title>(.+?)</svg>", "</span>");
+                info.summary = tpBlock.extractOne("<p class=\"book-desc\">", "</p>");
+                info.tag = tpBlock.extractOne("<em class=\"tag-small red\">", "</em>") + " " +
+                    tpBlock.extractOne("<em class=\"tag-small yellow\">", "</em>");
+                info.status = tpBlock.extractOne("<em class=\"tag-small gray\">", "</em></span>");
+                info.index = long.Parse(tpBlock.extractOne("<a href=\"/novel/", ".html\""));
+                info.source = "哔哩轻小说";
+                result.Add(info);
+                info.outputToConsole("https://www.linovelib.com/novel/{index}/catalog"); // :Debug
+			}
+
+            return result.ToArray();
 		}
         public static void download(string url, string path, string title = "")
 		{
