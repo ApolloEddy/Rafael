@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Drawing;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Aries;
 using Rafael;
@@ -107,14 +109,25 @@ namespace Rafael.LinovelibSupportor
             errorLogger.Dispose();
             logger.Dispose();
         }
+        public static LiteNovelInfo[] search(string searchkey)
+		{
+            const string API = "https://www.linovelib.com/s1/?searchkey=";
+
+            return null;
+        }
         public static Catalog extractCatalog(ref string page)
 		{
             const string host = "https://www.linovelib.com/";
             Catalog result = Catalog.Create();
             var tp = new TextParser(page);
             tp.extrim("\r", "\n", "\f");
-            tp.extractOne("<ul class=\"chapter-list clearfix\">", "<div class=\"footer\">", true);
-			foreach (string line in TextParser.extract(tp.ToString(),"<em class=\"v-line\">", "<div class="))
+            tp.extractOne("<ul class=\"chapter-list", "<div class=\"footer\">", true);
+            string extractWith;
+            if (tp.ToString().Contains("<em class=\"v-line\">"))
+            { extractWith = "<em class=\"v-line\">"; }
+            else
+            { extractWith = "clearfix\">"; }
+			foreach (string line in TextParser.extract(tp.ToString(), extractWith, "<div class="))
 			{
                 var tpLn = new TextParser(line);
                 Volume volume = Volume.Create();
@@ -140,7 +153,7 @@ namespace Rafael.LinovelibSupportor
             while (hasNext)
 			{
                 if (url.Contains("javascript:cid(0)"))
-                { return ""; }
+                { throw new UriFormatException("未能识别的URI：\"javascript:cid(0)\""); }
                 string page = "";
                 for (int i = 0; i < 3; i++)
 				{
@@ -151,16 +164,26 @@ namespace Rafael.LinovelibSupportor
 					}
 					catch
 					{
-                        throw;
+                        if (i is 2)
+                        { throw; }
 					}
 				}
                 // 提取文章内容
-                var temp = TextParser.extractOne(page, "<div class=\"tp\">", "<span id=\"chapter_last\">");
+                var temp = TextParser.extractOne(page, "<div class=\"tp\">", "<span id=\"chapter_last\">") + "</p></p></p></p></p>" +
+                    TextParser.extractOne(page, "<script>function ts()", "</script>");
                 foreach (string para in TextParser.extract(temp, "<p>", "</p>").ToArray())
 				{
                     content.Append(para);
                     content.Append("\n");
 				}
+				foreach (Match imgLink in new Regex("https(.+?)(jpg|jpeg|png|webp|svg|）)").Matches(temp))
+				{
+                    string linkTemp = imgLink.Value.ToLower();
+                    if (!(linkTemp.Contains("jpg") || linkTemp.Contains("jpeg") || linkTemp.Contains("png") || linkTemp.Contains("webp") || linkTemp.Contains("svg")))
+                    { continue; }
+                    content.Append($"<img src=\"{imgLink.Value}\">");
+                    content.Append("\n");
+                }
 
                 var tempBlock = TextParser.extractOne(page, "<p class=\"mlfy_page\">", "</p>");
                 if (tempBlock.Contains("下一页"))
@@ -189,33 +212,120 @@ namespace Rafael.LinovelibSupportor
 			foreach (Volume volume in info.Volumes)
 			{
                 string name = volume.VolumeName;
+                if (name is "")
+                { name = "第一卷全"; }
+                int index = 1;
                 textFile.AppendLine(ref name);
 				foreach (TitleLink item in volume.TitleLinkDict)
 				{
                     string key = item.Title;
                     string content = "";
                     try
-					{
-                        content = extractArticle(item.Link);
-					}
+					{ content = extractArticle(item.Link); }
 					catch(Exception ex)
 					{
                         var now = DateTime.Now;
                         string logTime =
                             $"{now.Year}-{string.Format("{0:D2}", now.Month)}-{string.Format("{0:D2}", now.Day)} {string.Format("{0:D2}", now.Hour)}:{string.Format("{0:D2}", now.Minute)}:{string.Format("{0:D2}", now.Second)}.{string.Format("{0:D3}", now.Millisecond)}";
                         string message =
-                            $"{logTime},{ex}\t{ex.Message}";
+                            $"{logTime},error\t[{ex.GetType().FullName}<url:{item.Link}>]{ex.Message.Split('\n', '\r')[0]}";
                         textFile.AppendLine(ref message);
                         Console.WriteLine($"Error: {message}"); // :Debug
                     }
                     // string label = "<img" + TextParser.extractOne(content, "<img", "\">") + "\">";
                     // content = content.Replace(label, "");
-                    textFile.AppendArticle(key, ref content);
-                    Console.WriteLine($"Successfully download <{name.Replace("\n", "")}>[{key}]"); // :Debug
+                    textFile.AppendArticle(key, index, ref content);
+                    Console.WriteLine($"Successfully download <{name.Replace("\n", "")}> [{key}]"); // :Debug
+                    index++;
                 }
 			}
             textFile.save();
             textFile.Dispose();
+		}
+        public static void downloadDocx(Catalog info, string path)
+		{
+            var docFile = new DocxGenerator(path);
+			foreach (Volume volume in info.Volumes)
+			{
+                string name = volume.VolumeName;
+                if (name is "")
+                { name = "第一卷全"; }
+                docFile.AppendTitle1(name, false);
+                docFile.AppendMarkStart(name);
+                // int index = 1;
+				foreach (TitleLink item in volume.TitleLinkDict)
+				{
+                    string key = item.Title;
+                    string content = "";
+					try 
+                    { content = extractArticle(item.Link); }
+					catch(Exception ex)
+					{
+                        var now = DateTime.Now;
+                        string logTime =
+                            $"{now.Year}-{string.Format("{0:D2}", now.Month)}-{string.Format("{0:D2}", now.Day)} {string.Format("{0:D2}", now.Hour)}:{string.Format("{0:D2}", now.Minute)}:{string.Format("{0:D2}", now.Second)}.{string.Format("{0:D3}", now.Millisecond)}";
+                        string message =
+                            $"{logTime},error\t[{ex.GetType().FullName}<url:{item.Link}>]{ex.Message.Split('\n', '\r')[0]}";
+                        docFile.AppendParagraph(message, false);
+                        Console.WriteLine($"Error: {message}"); // :Debug
+                    }
+                    docFile.AppendTitle2(key, false);
+                    docFile.AppendMarkStart(key);
+					foreach (string para in content.Split('\n'))
+					{
+                        // 下载图片
+                        if (para.ToLower().Contains("<img src="))
+						{
+                            string link = "";
+                            byte[] bytes = new byte[0];
+                            link = TextParser.extractOne(para.Replace("\\\"", "\""), "<img src=\"", "\"");
+                            var tempWeb = createWebProtocol(link);
+							try
+							{
+                                tempWeb.Accept = "image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8";
+                                bytes = tempWeb.contentBytes;
+                                docFile.AppendImage(ref bytes, true);
+                                bytes = null;
+							}
+							catch (Exception ex)
+							{
+                                if (bytes.Length != 0)
+								{
+									try
+									{
+                                        bytes = null;
+                                        GC.Collect(); 
+                                        docFile.AppendImage(new Uri(link), true);
+                                        goto L2;
+									}
+									catch
+									{ goto L1; }
+                                }
+                                L1:
+                                var now = DateTime.Now;
+                                string logTime =
+                                    $"{now.Year}-{string.Format("{0:D2}", now.Month)}-{string.Format("{0:D2}", now.Day)} {string.Format("{0:D2}", now.Hour)}:{string.Format("{0:D2}", now.Minute)}:{string.Format("{0:D2}", now.Second)}.{string.Format("{0:D3}", now.Millisecond)}";
+                                string message =
+                                    $"{logTime},error\t[{ex.GetType().FullName}<url:{link}>]{ex.Message.Split('\n', '\r')[0]}";
+                                docFile.AppendParagraph(message, false);
+                                Console.WriteLine($"{message}"); // :Debug
+                            }
+                            L2:
+                            continue;                           
+						}
+                        // 下载文字
+                        var paragraph = docFile.AppendParagraph(para, false);
+                        docFile.SetFirstLineIndent(paragraph);
+					}
+                    docFile.AppendMarkEnd(key);
+                    docFile.AppendParagraph("", true);
+                    Console.WriteLine($"Successfully download <{name.Replace("\n", "")}> [{key}]"); // :Debug
+                    // index++;
+                }
+                docFile.AppendMarkEnd(name);
+			}
+            docFile.Save();
+            docFile.Dispose();
 		}
 
         private static WebProtocol createWebProtocol(string url)

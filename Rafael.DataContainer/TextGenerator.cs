@@ -3,30 +3,42 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
 namespace Rafael.DataContainer
 {
-	public class TextGenerator : IDisposable
+	public class TextGenerator : GeneratorBase, IDisposable
 	{
 		public readonly string Path;
-		private FileStream TextStreamWriter;
+		private StreamWriter TextStreamWriter;
 		private bool disposedValue;
 
 		public TextGenerator(string path)
 		{
 			Path = path;
-			TextStreamWriter = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write);
+			TextStreamWriter = new StreamWriter(path);
 		}
-		public void AppendText(ref string content) 
+		public override void AppendText(ref string content) 
 		{ WriteString(ref content); }
-		public void AppendLine(ref string content) 
-		{ content += "\r\n"; WriteString(ref content); }
-		public void AppendLine() 
-		{ string content = "\r\n"; WriteString(ref content); }
-		public void AppendTitle(string title)
-		{ AppendLine(ref title); AppendLine(); }
-		public void AppendArticle(string title, ref string content)
+		public override void AppendLine(ref string content) 
+		{ content += "\n"; WriteString(ref content); }
+		public override void AppendLine() 
+		{ string content = "\n"; WriteString(ref content); }
+		public override void AppendTitle(string title)
+		{ 
+			// if (title.Contains("【第") && title.Contains("章】"))
+			// { title = title.Replace("【第", "第").Replace("章】", "章"); }
+			AppendLine(ref title); 
+			AppendLine(); 
+		}
+		public override void AppendTitle(string title, int index) 
+		{
+			// 自动加分节前缀
+			if (title.Contains("第") && (title.Contains("章") || (title.Contains("节"))))
+			{ title = $"第{hanString(index)}章 {title}"; }
+			AppendTitle(title);
+		}
+		public override void AppendArticle(string title, ref string content)
 		{
 			AppendTitle(title);
 			string[] paragraphs = content.Split('\r', '\n');
@@ -39,14 +51,37 @@ namespace Rafael.DataContainer
 				}
 			}
 		}
-		public void save()
-		{ TextStreamWriter.Flush(false); TextStreamWriter.Close(); }
+		public override void AppendArticle(string title, int index, ref string content)
+		{ title = $"第{hanString(index)}章 {title}"; AppendArticle(title, ref content); }
+		public override void save()
+		{ TextStreamWriter.Flush(); TextStreamWriter.Close(); TextStreamWriter.Dispose(); }
 
 		private void WriteString(ref string content)
 		{
-			byte[] bytes = Encoding.UTF8.GetBytes(content);
-			TextStreamWriter.Write(bytes, 0, bytes.Length - 1);
-			TextStreamWriter.Flush(false);
+			// 处理字符串
+			Regex reg;
+			if (content.ToLower().Contains("<img src="))
+			{
+				reg = new Regex("<img src=\"(?<ret>(.+?))\"");
+				content = "　　插图：url=>" + reg.Match(content).Groups["ret"].Value + "\n";
+				goto L1;
+			}
+			reg = new Regex("(&|&)#(.+?)(?<ret>([0-9]{1,5}));");
+			foreach (Match item in reg.Matches(content))
+			{
+				try
+				{
+					var matchedString = item.Groups["ret"].Value;
+					int encodedString = int.Parse(matchedString);
+					string newString = char.ConvertFromUtf32(encodedString);
+					content = content.Replace(item.Value, newString).Replace("&#nbsp;", "　").Replace("&#nbsp;", "　");
+				}
+				catch { }
+			}
+			// 写入
+			L1: 
+			TextStreamWriter.Write(content);
+			TextStreamWriter.Flush();
 		}
 
 		protected virtual void Dispose(bool disposing)
