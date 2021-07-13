@@ -148,9 +148,6 @@ namespace Rafael.DataContainer
 			bool done = false;
 			bitmapDecoder.DownloadCompleted += delegate (object s, EventArgs e)
 			{
-				int num = bitmapDecoder.Frames[0].Format.BitsPerPixel * bitmapDecoder.Frames[0].PixelWidth >> 3;
-				byte[] array = new byte[0];
-				Array.Resize(ref array, num * bitmapDecoder.Frames[0].PixelHeight);
 				PngBitmapEncoder pngBitmapEncoder = new PngBitmapEncoder();
 				pngBitmapEncoder.Frames.Add(bitmapDecoder.Frames[0]);
 				using (MemoryStream stream = new MemoryStream())
@@ -159,8 +156,7 @@ namespace Rafael.DataContainer
 					img = new Bitmap(stream);
 					AppendImage(ref img, newopage);
 				}
-				array = null;
-				GC.Collect();	
+				GC.Collect();
 				done = true;
 			};
 			while (!done)
