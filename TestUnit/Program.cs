@@ -37,9 +37,9 @@ namespace TestUnit
 			// 数据收集
 			// LinovelibSupportor.collectBookInfos($"{Environment.CurrentDirectory}\\linovelib.json");
 			// 使用测试
-			//string page = LinovelibSupportor.page("https://www.linovelib.com/novel/2668/catalog"); // 
-			//Catalog catalog = LinovelibSupportor.extractCatalog(ref page);
-			//LinovelibSupportor.downloadDocx(catalog, Environment.CurrentDirectory + "/侦探已死.docx");
+			string page = LinovelibSupportor.page("https://www.linovelib.com/novel/2356/catalog"); // 
+			Catalog catalog = LinovelibSupportor.extractCatalog(ref page);
+			LinovelibSupportor.downloadDocx(catalog, Environment.CurrentDirectory + "/魔女之旅_ttest.docx");
 
 			//var result = LinovelibSupportor.search("魔法禁书目录");
 			//LinovelibSupportor.extractSearchResult(ref result);
@@ -49,9 +49,9 @@ namespace TestUnit
 			//d.Test();
 			//d.Save();
 
-			Interactor inter = new Interactor(args);
-			inter.recon();
-			inter.run();
+			//Interactor inter = new Interactor(args);
+			//inter.recon();
+			//inter.run();
 
 			stopwatch.Stop();
 			double timediff = (double)stopwatch.ElapsedMilliseconds / 1000; // 监控运行时长

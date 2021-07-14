@@ -40,8 +40,8 @@ namespace Rafael.Forms
 			}
 		}
 
-		private void addCell(string bookname, string author, string library, string status, string source, string summary)
-		{ dataGridView.SuspendLayout(); dataGridView.Rows.Add(bookname, author, library, status, source, summary); }
+		private void addCell(string bookname, string author, string tag, string status, string source, string summary)
+		{ dataGridView.SuspendLayout(); dataGridView.Rows.Add(bookname, author, tag, status, source, summary); }
 		private void addCell(LiteNovelInfo info) 
 		{ addCell(info.bookname, info.author, info.tag, info.status, info.source, info.summary); }
 

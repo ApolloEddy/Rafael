@@ -45,10 +45,15 @@ namespace Rafael.DataContainer
 			return Section;
 		}
 		// 插入段落
-		public Paragraph AppendParagraph(string message = "\n", bool newpage = false) 
+		public Paragraph AppendParagraph() 
 		{
 			Paragraph para = Section.AddParagraph();
 			para = SetFirstLineIndent(para);
+			return para;
+		}
+		public Paragraph AppendLine(string message = "\n", bool newpage = false)
+		{
+			var para = Section.Paragraphs.Count == 0? Section.AddParagraph():Section.Paragraphs[Section.Paragraphs.Count - 1];
 			// 字符转义
 			Regex reg = new Regex("(&|&)#(.+?)(?<ret>([0-9]{1,5}));");
 			foreach (Match item in reg.Matches(message))
@@ -62,7 +67,7 @@ namespace Rafael.DataContainer
 				}
 				catch { }
 			}
-			para.AppendText(message);
+			para.AppendText(message + "\n");
 			if (newpage)
 			{ para.AppendBreak(BreakType.PageBreak); }
 			return para;
