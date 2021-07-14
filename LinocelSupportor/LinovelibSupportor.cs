@@ -303,7 +303,7 @@ namespace Rafael.LinovelibSupportor
                             $"{now.Year}-{string.Format("{0:D2}", now.Month)}-{string.Format("{0:D2}", now.Day)} {string.Format("{0:D2}", now.Hour)}:{string.Format("{0:D2}", now.Minute)}:{string.Format("{0:D2}", now.Second)}.{string.Format("{0:D3}", now.Millisecond)}";
                         string message =
                             $"{logTime},error\t[{ex.GetType().FullName}<url:{item.Link}>]{ex.Message.Split('\n', '\r')[0]}";
-                        docFile.AppendLine(message, false);
+                        docFile.AppendLine(message);
                         Console.WriteLine($"Error: {message}"); // :Debug
                     }
                     docFile.AppendTitle2(key, false);
@@ -347,18 +347,18 @@ namespace Rafael.LinovelibSupportor
                                     $"{now.Year}-{string.Format("{0:D2}", now.Month)}-{string.Format("{0:D2}", now.Day)} {string.Format("{0:D2}", now.Hour)}:{string.Format("{0:D2}", now.Minute)}:{string.Format("{0:D2}", now.Second)}.{string.Format("{0:D3}", now.Millisecond)}";
                                 string message =
                                     $"{logTime},error\t[{ex.GetType().FullName}<url:{link}>]{ex.Message.Split('\n', '\r')[0]}";
-                                docFile.AppendLine(message, false);
+                                docFile.AppendLine(message);
                                 Console.WriteLine($"{message}"); // :Debug
                             }
                             L2:
                             continue;                           
 						}
                         // 下载文字
-                        var paragraph = docFile.AppendLine(para, false);
+                        var paragraph = docFile.AppendLine(para);
                         docFile.SetFirstLineIndent(paragraph);
 					}
                     docFile.AppendMarkEnd(key);
-                    docFile.AppendLine("", true);
+                    docFile.AppendNewPageMark();
                     Console.WriteLine($"Successfully download <{name.Replace("\n", "")}> [{key}]"); // :Debug
                     // index++;
                 }

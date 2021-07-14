@@ -51,7 +51,7 @@ namespace Rafael.DataContainer
 			para = SetFirstLineIndent(para);
 			return para;
 		}
-		public Paragraph AppendLine(string message = "\n", bool newpage = false)
+		public Paragraph AppendLine(string message = "\n")
 		{
 			var para = (Section.Paragraphs.Count == 0? Section.AddParagraph():Section.Paragraphs[Section.Paragraphs.Count - 1]);
 			// 字符转义
@@ -68,9 +68,11 @@ namespace Rafael.DataContainer
 				catch { }
 			}
 			para.AppendText(message + "\n");
-			if (newpage)
-			{ para.AppendBreak(BreakType.PageBreak); }
 			return para;
+		}
+		public void AppendNewPageMark()
+		{
+			Section.Paragraphs[Section.Paragraphs.Count - 1].AppendBreak(BreakType.PageBreak);
 		}
 		// 插入标题
 		public Paragraph AppendTitle(string title, BuiltinStyle style, bool newpage = false)
