@@ -53,7 +53,7 @@ namespace Rafael.DataContainer
 		}
 		public Paragraph AppendLine(string message = "\n", bool newpage = false)
 		{
-			var para = Section.Paragraphs.Count == 0? Section.AddParagraph():Section.Paragraphs[Section.Paragraphs.Count - 1];
+			var para = (Section.Paragraphs.Count == 0? Section.AddParagraph():Section.Paragraphs[Section.Paragraphs.Count - 1]);
 			// 字符转义
 			Regex reg = new Regex("(&|&)#(.+?)(?<ret>([0-9]{1,5}));");
 			foreach (Match item in reg.Matches(message))
